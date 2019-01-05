@@ -11,7 +11,28 @@ int checkPage_Free(Page *p,int TNo)//页是否有空闲空间
 			{return 1;} 
 	return 0;
 }
-
+int checkkey_UNIQUE(PageTable *PT,char *key)//key是否重复 
+{
+	Page *P = PT->next;
+	while(P)
+	{
+		if(strlen(P->KeyList[MAX_OF_RECORD-1]) != 0)//此块存有记录 
+		{
+			//printf("1111\n");
+			//
+			for(int i = MAX_OF_RECORD-1;i>=0;i--)
+			{
+				if(strlen(P->KeyList[i])==0)
+					break;
+				if(strcmp(P->KeyList[i],key)==0){
+					return 1;
+				}
+			}
+		}
+		P = P->next;
+	}
+	return 0;
+}
 PageNode* checkBuf_Free(PageTable *PT,BufferQue* Buf,int TNo)//缓冲区是否有空闲空间 ，返回缓冲区节点 
 {
 	PageNode *pn = Buf->front->next;
@@ -87,7 +108,10 @@ void addRecord(BPlusTree &BT,PageTable *&PT,BufferQue* &Buf,char *key,char** val
 {
 	
 	//遍历缓冲区的页，是否有空闲空间
- 
+	if(checkkey_UNIQUE(PT,key) == 1){
+		printf("记录主值重复，插入失败！\n");
+		return;
+	}
 	//printf("!!!!!!!!!!!!\n"); 
 	int offset = 0;
 	PageNode *p1 = checkBuf_Free(PT,Buf,TNo);	
